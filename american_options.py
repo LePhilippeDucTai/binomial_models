@@ -1,0 +1,2 @@
+class AmericanOption:
+    pass

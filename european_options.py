@@ -1,0 +1,2 @@
+class EuropeanOption:
+    pass
