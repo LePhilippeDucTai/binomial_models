@@ -1,12 +1,17 @@
-import math
 import numpy as np
 from numba import njit
 
 
 @njit
 def binomial_tree(x, N, u, d):
-    us = u ** np.arange(N)
-    ds = d ** np.arange(N)
+    """General binomial tree in an array structure
+        x : starting point of the tree
+        N : number of periods
+        u : up multiplicative factor
+        d : down multiplicative factor
+    """
+    p = np.arange(N)
+    us, ds = u ** p, d ** p
     M = np.zeros((N, N))
     M[0, 0] = 1.0
     for j in range(N):
@@ -15,24 +20,13 @@ def binomial_tree(x, N, u, d):
     return M * x
 
 
-def crr_binomial_tree(x, N, sigma, dt):
-    u = np.exp(sigma * np.sqrt(dt))
-    return binomial_tree(x, N, u, 1 / u)
-
-
-def jr_binomial_tree(x, N, r, sigma, dt):
-    m = np.exp(r * dt)
-    s = np.exp(sigma * np.sqrt(dt))
-    u = m * s
-    d = m / s
-    return binomial_tree(x, N, u, d)
-
-
 def crr_ud(sigma, dt):
+    """Cox-Ross-Rubinstein up and down factors given sigma and dt."""
     return np.exp(sigma * np.sqrt(dt)), np.exp(-sigma * np.sqrt(dt))
 
 
 def jr_ud(r, sigma, dt):
+    """Jarrow-Rudd up and down factors given r, sigma and dt."""
     m = np.exp((r - sigma**2 / 2) * dt)
     s = np.exp(sigma * np.sqrt(dt))
     u = m * s
@@ -41,15 +35,22 @@ def jr_ud(r, sigma, dt):
 
 
 def crr_q(r, u, d, dt):
+    """Risk neutral probability in the Cox-Ross-Rubinstein model,
+    given r (short interest rate), u, d and dt.
+    """
     R = np.exp(r * dt)
     return (R - d) / (u - d)
 
 
 def jr_q():
+    """Risk neutral probability in the Jarrow-Rudd model,
+    given r (short interest rate), u, d and dt.
+    """
     return 0.5
 
 
 class BinomialTree:
+    """General binomial Tree model. Not to be used explicitely."""
     def __init__(self, r, sigma, T, dt):
         self.r = r
         self.sigma = sigma
@@ -66,10 +67,11 @@ class BinomialTree:
 
     @property
     def n_periods(self):
-        return math.floor(self.T / self.dt)
+        return self.T // self.dt
 
 
 class CRRModel(BinomialTree):
+    """Cox-Ross-Rubinstein Model class."""
     def __init__(self, r, sigma, T, dt):
         super().__init__(r, sigma, T, dt)
         self.u, self.d = crr_ud(sigma, dt)
@@ -80,6 +82,7 @@ class CRRModel(BinomialTree):
 
 
 class JRModel(BinomialTree):
+    """Jarrow-Rudd Model class"""
     def __init__(self, r, sigma, T, dt):
         super().__init__(r, sigma, T, dt)
         self.u, self.d = jr_ud(r, sigma, dt)
