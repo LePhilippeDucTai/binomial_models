@@ -1,10 +1,20 @@
 import numpy as np
+from numba import njit
 
 from binomial_trees import BinomialTree
 
 
+@njit
 def rn_expectation(u, d, r, q, dt):
     return (q * u + (1 - q) * d) * np.exp(-r * dt)
+
+
+@njit
+def compute_induction(N, V, r, q, dt):
+    for j in range(N - 1, 0, -1):
+        for i in range(j):
+            V[i, j - 1] = rn_expectation(V[i, j], V[i + 1, j], r, q, dt)
+    return V
 
 
 class EuropeanOption:
@@ -23,13 +33,7 @@ class EuropeanOption:
         q = self.model.q
         V = np.zeros((N, N))
         V[:, -1] = self.payoff(terminal_value)
-        return self.compute_induction(N, V, r, q, dt)
-
-    def compute_induction(self, N, V, *args):
-        for j in range(N - 1, 0, -1):
-            for i in range(j):
-                V[i, j - 1] = rn_expectation(V[i, j], V[i + 1, j], *args)
-        return V
+        return compute_induction(N, V, r, q, dt)
 
 
 class EuropeanCallOption(EuropeanOption):

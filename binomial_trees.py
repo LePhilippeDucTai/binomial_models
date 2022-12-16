@@ -69,7 +69,7 @@ class BinomialTree:
 
     @property
     def n_periods(self):
-        return self.T // self.dt
+        return int(self.T // self.dt)
 
 
 class CRRModel(BinomialTree):
