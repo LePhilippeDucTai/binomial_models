@@ -5,13 +5,13 @@ from numba import njit
 @njit
 def binomial_tree(x, N, u, d):
     """General binomial tree in an array structure
-        x : starting point of the tree
-        N : number of periods
-        u : up multiplicative factor
-        d : down multiplicative factor
+    x : starting point of the tree
+    N : number of periods
+    u : up multiplicative factor
+    d : down multiplicative factor
     """
     p = np.arange(N)
-    us, ds = u ** p, d ** p
+    us, ds = u**p, d**p
     M = np.zeros((N, N))
     M[0, 0] = 1.0
     for j in range(N):
@@ -51,15 +51,17 @@ def jr_q():
 
 class BinomialTree:
     """General binomial Tree model. Not to be used explicitely."""
-    def __init__(self, r, sigma, T, dt):
+
+    def __init__(self, s0, r, sigma, T, dt):
+        self.s0 = s0
         self.r = r
         self.sigma = sigma
         self.T = T
         self.dt = dt
         self.u, self.d = 2, 0.5
 
-    def lattice(self, s0):
-        return binomial_tree(s0, self.n_periods, self.u, self.d)
+    def lattice(self):
+        return binomial_tree(self.s0, self.n_periods, self.u, self.d)
 
     @property
     def q(self):
@@ -72,8 +74,9 @@ class BinomialTree:
 
 class CRRModel(BinomialTree):
     """Cox-Ross-Rubinstein Model class."""
-    def __init__(self, r, sigma, T, dt):
-        super().__init__(r, sigma, T, dt)
+
+    def __init__(self, s0, r, sigma, T, dt):
+        super().__init__(s0, r, sigma, T, dt)
         self.u, self.d = crr_ud(sigma, dt)
 
     @property
@@ -83,8 +86,9 @@ class CRRModel(BinomialTree):
 
 class JRModel(BinomialTree):
     """Jarrow-Rudd Model class"""
-    def __init__(self, r, sigma, T, dt):
-        super().__init__(r, sigma, T, dt)
+
+    def __init__(self, s0, r, sigma, T, dt):
+        super().__init__(s0, r, sigma, T, dt)
         self.u, self.d = jr_ud(r, sigma, dt)
 
     @property
