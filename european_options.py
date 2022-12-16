@@ -20,6 +20,7 @@ def compute_induction(N, V, r, q, dt):
 class EuropeanOption:
     def __init__(self, model: BinomialTree):
         self.model = model
+        self.npv_lattice = None
 
     def payoff(self, x):
         return x
@@ -33,7 +34,8 @@ class EuropeanOption:
         q = self.model.q
         V = np.zeros((N, N))
         V[:, -1] = self.payoff(terminal_value)
-        return compute_induction(N, V, r, q, dt)
+        self.npv_lattice = compute_induction(N, V, r, q, dt)
+        return self.npv_lattice[0, 0]
 
 
 class EuropeanCallOption(EuropeanOption):
