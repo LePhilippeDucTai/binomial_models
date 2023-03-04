@@ -13,7 +13,8 @@ def rn_expectation(u, d, r, q, dt):
 def compute_induction(N, V, r, q, dt):
     for j in range(N - 1, 0, -1):
         for i in range(j):
-            V[i, j - 1] = rn_expectation(V[i, j], V[i + 1, j], r, q, dt)
+            expected_value = rn_expectation(V[i, j], V[i + 1, j], r, q, dt)
+            V[i, j - 1] = expected_value
     return V
 
 
@@ -27,11 +28,8 @@ class EuropeanOption:
 
     def npv(self):
         lattice = self.model.lattice()
-        N = self.model.n_periods
         terminal_value = lattice[:, -1]
-        r = self.model.r
-        dt = self.model.dt
-        q = self.model.q
+        r, dt, q, N = self.model.r, self.model.dt, self.model.q, self.model.n_periods
         V = np.zeros((N, N))
         V[:, -1] = self.payoff(terminal_value)
         self.npv_lattice = compute_induction(N, V, r, q, dt)
